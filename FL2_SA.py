@@ -17,20 +17,20 @@ from tensorflow.keras import backend as K
 
 # LR: 0.010000 to 0.00001
 # local update: 15 to 1
-sa = SimulatedAnnealing(initial_temperature=100, cooling=0.8, number_variables=55,
-                        upper_bounds=[99, 99, 99, 99, 99, 99, 99, 99, 99, 99
+sa = SimulatedAnnealing(initial_temperature=100, cooling=0.8, number_variables=57,
+                        upper_bounds=[0.010000, 15, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99
                                       , 99, 99, 99, 99, 99, 99, 99, 99, 99, 99
                                       , 99, 99, 99, 99, 99, 99, 99, 99, 99, 99
                                       , 99, 99, 99, 99, 99, 99, 99, 99, 99, 99
                                       , 99, 99, 99, 99, 99, 99, 99, 99, 99, 99
                                       , 99, 99, 99, 99, 99],
-                        lower_bounds=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        lower_bounds=[0.010000, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                       , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                       , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                       , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                       , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                       , 0, 0, 0, 0, 0],
-                        computing_time=10000, no_attempts=2, lr=False)
+                        computing_time=10000, no_attempts=2)
 
 '''
 sa = SimulatedAnnealing(initial_temperature=100, cooling=0.8, number_variables=7,#57,
@@ -212,29 +212,30 @@ smlp_global = MLP()
 global_model = smlp_global.build(784, 10)
 
 def train_loss_SA(X, global_model, comm_round, clients_batched):
-    #lr = X[0]
+    lr = X[0]
     #print('Learning rate: {}'.format(lr))
-    #local_epoch = int(X[1])
-    user_ids = [int(X[i]) for i in range(0, len(X) - 1)]
+    local_epoch = int(X[1])
+    #local_epoch = int(X[0])
+    user_ids = [int(X[i]) for i in range(2, len(X) - 1)]
 
     global_weights = global_model.get_weights()
     scaled_local_weight_list = list()
 
     client_names = list(clients_batched.keys())
     client_select = [client_names[i] for i in user_ids]
-    print(client_select)
-    #optimizer_t = SGD(lr=lr, decay=lr / GLOBAL_ROUNDS, momentum=0.9)
+    #print(client_select)
+    optimizer_t = SGD(lr=lr, decay=lr / GLOBAL_ROUNDS, momentum=0.9)
 
     for client in client_select:
         smlp_local = MLP()
         local_model = smlp_local.build(784, 10)
-        local_model.compile(loss=LOSS, optimizer=optimizer, metrics=METRICS)
+        local_model.compile(loss=LOSS, optimizer=optimizer_t, metrics=METRICS)
 
         # definir o peso do modelo local para o peso do modelo global
         local_model.set_weights(global_weights)
 
         # Treina o modelo local do usuario com seu respectivo dado
-        local_model.fit(clients_batched[client], epochs=1, verbose=0)
+        local_model.fit(clients_batched[client], epochs=local_epoch, verbose=0)
 
         # scala os pesos dos usuarios com base em seu conjunto de dados
         scaling_factor = weight_scalling_factor(clients_batched, client, client_select)
@@ -260,7 +261,7 @@ def train_loss_SA(X, global_model, comm_round, clients_batched):
     return global_model, global_loss, global_acc
 
 
-def federated_train(global_rounds, global_model, clients_batched):
+def federated_train(global_rounds, global_model, clients_batched, l_update):
     global_loss = list()
     global_accuracy = list()
 
@@ -324,10 +325,9 @@ def save(name="name", **kwargs):
         f.write(str(dt)[1:-1])
         f.close()
 
-
 sa.initialize(GLOBAL_ROUNDS, train_loss_SA, global_model, clients_batched)
-sa.save('proposta_user_select')
+sa.save('proposta_local_update')
 #federated_train(GLOBAL_ROUNDS,global_model, clients_batched)
-#global_loss_list, global_accuracy_list = federated_train(GLOBAL_ROUNDS, global_model, clients_batched)
-#save("baseline", loss=global_loss_list, accuracy=global_accuracy_list)
+#global_loss_list, global_accuracy_list = federated_train(GLOBAL_ROUNDS, global_model, clients_batched, 5)
+#save("baseline_5updates", loss=global_loss_list, accuracy=global_accuracy_list)
 
