@@ -325,9 +325,9 @@ def save(name="name", **kwargs):
         f.write(str(dt)[1:-1])
         f.close()
 
-sa.initialize(GLOBAL_ROUNDS, train_loss_SA, global_model, clients_batched)
-sa.save('proposta_local_update')
+#sa.initialize(GLOBAL_ROUNDS, train_loss_SA, global_model, clients_batched)
+#sa.save('proposta_local_update')
 #federated_train(GLOBAL_ROUNDS,global_model, clients_batched)
-#global_loss_list, global_accuracy_list = federated_train(GLOBAL_ROUNDS, global_model, clients_batched, 5)
-#save("baseline_5updates", loss=global_loss_list, accuracy=global_accuracy_list)
+global_loss_list, global_accuracy_list = federated_train(GLOBAL_ROUNDS, global_model, clients_batched, 100)
+save("baseline_100updates", loss=global_loss_list, accuracy=global_accuracy_list)
 
