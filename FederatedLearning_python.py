@@ -37,7 +37,7 @@ def load_mnist_bypath(paths, verbose=-1):
     return data, labels
 
 # Declara o caminho do conjunto de dados mnist
-img_path = '/home/helio/PycharmProjects/FederatedLearning/mnist/trainingSet/trainingSet'
+img_path = 'mnist/trainingSet/trainingSet'
 
 # Gera a lista de caminhos, utilizando a funcao list_images da biblioteca paths
 image_paths = list(paths.list_images(img_path))
