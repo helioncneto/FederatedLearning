@@ -106,6 +106,7 @@ class SimulatedAnnealing:
         #self.save_model('proposta', model)
 
 
+
     def plot(self):
         plt.plot(self.record_best_fitness)
         plt.show()
